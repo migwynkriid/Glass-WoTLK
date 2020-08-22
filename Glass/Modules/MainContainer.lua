@@ -55,7 +55,9 @@ function MC:OnInitialize()
   font:SetSpacing(3)
 
   -- Hide other chat elements
-  --QuickJoinToastButton:Hide()
+  if (not Core.Classic) then
+    QuickJoinToastButton:Hide()
+  end
   ChatFrameChannelButton:Hide()
   ChatFrameMenuButton:Hide()
 end
