@@ -1,6 +1,5 @@
 local Core, Constants = unpack(select(2, ...))
 local CT = Core:GetModule("ChatTabs")
-local M = Core:GetModule("Mover");
 local MC = Core:GetModule("MainContainer")
 local SMF = Core:GetModule("SlidingMessageFrame")
 
@@ -9,7 +8,7 @@ local LSM = Core.Libs.LSM
 -- luacheck: push ignore 113
 local CHAT_CONFIGURATION = CHAT_CONFIGURATION
 local CLOSE_CHAT_WINDOW = CLOSE_CHAT_WINDOW
-local UNLOCK_WINDOW = UNLOCK_WINDOW
+local UNLOCK_WINDOW = UNLOCK_WINDOW 
 local C_Timer = C_Timer
 local ChatConfigFrame = ChatConfigFrame
 local CreateFont = CreateFont
@@ -37,7 +36,6 @@ local UIDropDownMenu_AddButton = UIDropDownMenu_AddButton
 local UIDropDownMenu_CreateInfo = UIDropDownMenu_CreateInfo
 local UIDropDownMenu_Initialize = UIDropDownMenu_Initialize
 local UIParent = UIParent
-local UNLOCK_WINDOW = UNLOCK_WINDOW
 -- luacheck: pop
 
 local Colors = Constants.COLORS
@@ -160,18 +158,13 @@ function CT:OnEnable()
     -- Override context menu
     UIDropDownMenu_Initialize(dropDown, function ()
       local info = UIDropDownMenu_CreateInfo()
+      info.text = RENAME_CHAT_WINDOW
+      info.func = FCF_RenameChatWindow_Popup
+      info.notCheckable = 1
+      UIDropDownMenu_AddButton(info)
 
+      -- Create new chat window
       if chatFrame == DEFAULT_CHAT_FRAME then
-        -- Unlock chat window
-        info = UIDropDownMenu_CreateInfo();
-        info.text = UNLOCK_WINDOW;
-        info.notCheckable = 1;
-        info.func = function()
-          M:Unlock();
-        end;
-        UIDropDownMenu_AddButton(info);
-
-        -- Create new chat window
         info = UIDropDownMenu_CreateInfo()
         info.text = NEW_CHAT_WINDOW
         info.func = FCF_NewChatWindow
@@ -181,12 +174,6 @@ function CT:OnEnable()
         end
         UIDropDownMenu_AddButton(info)
       end
-
-      -- Rename window
-      info.text = RENAME_CHAT_WINDOW
-      info.func = FCF_RenameChatWindow_Popup
-      info.notCheckable = 1
-      UIDropDownMenu_AddButton(info)
 
       -- Close chat window
       if chatFrame ~= DEFAULT_CHAT_FRAME and not IsCombatLog(chatFrame) then
@@ -212,15 +199,15 @@ function CT:OnEnable()
       info.notCheckable = 1;
       UIDropDownMenu_AddButton(info);
 
-      -- lock
+      -- unlock
       info = UIDropDownMenu_CreateInfo();
-      info.text = "Unlock"
+      info.text = UNLOCK_WINDOW;
       info.notCheckable = 1;
-      info.func = function() 
-        local M = Core:GetModule("Mover")
-        M:Unlock() 
+      info.func = function()
+        local M = Core:GetModule("Mover");
+        M:Unlock();
       end;
-      UIDropDownMenu_AddButton(info)
+      UIDropDownMenu_AddButton(info);
     end, "MENU")
   end
 
