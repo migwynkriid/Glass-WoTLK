@@ -10,7 +10,7 @@ Constants.DEFAULT_ANCHOR_POINT = {
   relativeTo = UIParent,
   relativePoint = "BOTTOMLEFT",
   xOfs = 20,
-  yOfs = 230
+  yOfs = 30
 }
 
 -- Colors

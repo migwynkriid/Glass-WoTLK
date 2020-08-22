@@ -1,13 +1,10 @@
-## Interface: 80300
+## Interface: 11305
 ## Plain Title: Glass
 ## Author: mixxorz
-## Version: @project-version@
-
+## Version: 0.1.0
 ## Title: |c00DFBA69Glass|r
 ## Notes: Immersive and minimalistic chat UI.
-
 ## SavedVariables: GlassDB
-
 ## X-Curse-Project-ID: 403607
 
 # Libs
