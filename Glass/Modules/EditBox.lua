@@ -38,16 +38,22 @@ function EB:OnEnable()
     _G["ChatFrame"..i.."EditBoxLeft"]:Hide()
     _G["ChatFrame"..i.."EditBoxMid"]:Hide()
     _G["ChatFrame"..i.."EditBoxRight"]:Hide()
-    --_G["ChatFrame"..i.."EditBoxFocusLeft"]:Hide()
-    --_G["ChatFrame"..i.."EditBoxFocusMid"]:Hide()
-    --_G["ChatFrame"..i.."EditBoxFocusRight"]:Hide()
+
+    if (not Core.Classic) then
+      _G["ChatFrame"..i.."EditBoxFocusLeft"]:Hide()
+      _G["ChatFrame"..i.."EditBoxFocusMid"]:Hide()
+      _G["ChatFrame"..i.."EditBoxFocusRight"]:Hide()
+    end
 
     self:RawHook(_G["ChatFrame"..i.."EditBoxLeft"], "Show", function () end, true)
     self:RawHook(_G["ChatFrame"..i.."EditBoxMid"], "Show", function () end, true)
     self:RawHook(_G["ChatFrame"..i.."EditBoxRight"], "Show", function () end, true)
-    --self:RawHook(_G["ChatFrame"..i.."EditBoxFocusLeft"], "Show", function () end, true)
-    --self:RawHook(_G["ChatFrame"..i.."EditBoxFocusMid"], "Show", function () end, true)
-    --self:RawHook(_G["ChatFrame"..i.."EditBoxFocusRight"], "Show", function () end, true)
+    
+    if (not Core.Classic) then
+      self:RawHook(_G["ChatFrame"..i.."EditBoxFocusLeft"], "Show", function () end, true)
+      self:RawHook(_G["ChatFrame"..i.."EditBoxFocusMid"], "Show", function () end, true)
+      self:RawHook(_G["ChatFrame"..i.."EditBoxFocusRight"], "Show", function () end, true)
+    end
 
     -- New styling
     editBox:ClearAllPoints()
