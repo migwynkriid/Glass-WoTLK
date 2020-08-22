@@ -12,7 +12,7 @@ local ChatFrameMenuButton = ChatFrameMenuButton
 local CreateFont = CreateFont
 local CreateFrame = CreateFrame
 local MouseIsOver = MouseIsOver
-local QuickJoinToastButton = QuickJoinToastButton
+--local QuickJoinToastButton = QuickJoinToastButton
 local UIParent = UIParent
 -- luacheck: pop
 
@@ -55,7 +55,7 @@ function MC:OnInitialize()
   font:SetSpacing(3)
 
   -- Hide other chat elements
-  QuickJoinToastButton:Hide()
+  --QuickJoinToastButton:Hide()
   ChatFrameChannelButton:Hide()
   ChatFrameMenuButton:Hide()
 end
