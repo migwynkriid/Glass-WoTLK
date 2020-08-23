@@ -545,7 +545,7 @@ function SMF:OnEnable()
   self.font:SetShadowOffset(1, -1)
   self.font:SetJustifyH("LEFT")
   self.font:SetJustifyV("MIDDLE")
-  self.font:SetSpacing(3)
+  self.font:SetSpacing(Core.db.profile.messageFontSpacing)
 
   -- Replace default chat frames with SlidingMessageFrames
   local containerFrame = MC:GetFrame()
@@ -617,6 +617,8 @@ function SMF:OnUpdateFont()
     LSM:Fetch(LSM.MediaType.FONT, Core.db.profile.font),
     Core.db.profile.messageFontSize
   )
+
+  self.font:SetSpacing(Core.db.profile.messageFontSpacing)
 
   for _, frame in ipairs(self.state.frames) do
     frame:OnUpdateFont()
