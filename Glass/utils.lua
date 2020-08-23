@@ -1,4 +1,4 @@
-local Core, _, Utils = unpack(select(2, ...))
+local Core, _, Utils, Object = unpack(select(2, ...))
 
 -- Utility functions
 
@@ -11,4 +11,17 @@ Utils.print = function(str, t)
     -- Buffer print messages until ViragDevTool loads
     table.insert(Core.printBuffer, {str, t})
   end
+end
+
+
+function Object:New(template)
+	template     = template or self;
+	local newObj = setmetatable({}, template);
+	local mt     = getmetatable(newObj);
+	mt.__index   = template;
+	return newObj;
+end
+
+function Object:Subclass()
+	return setmetatable({}, {__index = self})
 end
