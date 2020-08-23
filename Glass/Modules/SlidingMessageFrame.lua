@@ -1,4 +1,4 @@
-local Core, Constants = unpack(select(2, ...))
+local Core, Constants, _, Object = unpack(select(2, ...))
 local MC = Core:GetModule("MainContainer")
 local SMF = Core:GetModule("SlidingMessageFrame")
 local TP = Core:GetModule("TextProcessing")
@@ -18,6 +18,8 @@ local NUM_CHAT_WINDOWS = NUM_CHAT_WINDOWS
 local SetItemRef = SetItemRef
 local ShowUIPanel = ShowUIPanel
 local UIParent = UIParent
+local split = strsplit
+local tinsert = table.insert
 -- luacheck: pop
 
 local lodash = Core.Libs.lodash
@@ -74,12 +76,12 @@ function SlidingMessageFrame:Initialize()
   self.scrollFrame.bg:SetColorTexture(0, 1, 0, 0)
 
   self.timeElapsed = 0
-  self.scrollFrame:SetScript("OnUpdate", function (frame, elapsed)
+  self.scrollFrame:SetScript("OnUpdate", function (_, elapsed)
     self:OnUpdate(elapsed)
   end)
 
   -- Scrolling
-  self.scrollFrame:SetScript("OnMouseWheel", function (frame, delta)
+  self.scrollFrame:SetScript("OnMouseWheel", function (_, delta)
     local currentScrollOffset = self.scrollFrame:GetVerticalScroll()
     local scrollRange = self.scrollFrame:GetVerticalScrollRange()
 
@@ -92,8 +94,8 @@ function SlidingMessageFrame:Initialize()
 
     -- Show hidden messages
     for _, message in ipairs(self.state.messages) do
-      if not message:IsVisible() then
-        message:Show()
+      if not message.frame:IsVisible() then
+        message.frame:Show()
       end
     end
   end)
@@ -131,7 +133,7 @@ function SlidingMessageFrame:Initialize()
 
       message.introAg:Stop()
       message.outroAg:Stop()
-      message:Hide()
+      message.frame:Hide()
     end
   )
 end
@@ -148,154 +150,238 @@ function SlidingMessageFrame:IsVisible()
   return self.scrollFrame:IsVisible()
 end
 
-function SlidingMessageFrame:MessagePoolCreator()
-  local message = CreateFrame("Frame", nil, self.slider)
-  message:SetWidth(self.config.width)
+local Message = Object:Subclass()
+function Message:Initialize(config, parent, mouseOverFn)
+  self.frame       = nil;
+  self.leftBg      = nil;
+  self.centerBg    = nil;
+  self.rightBg     = nil;
+  self.text        = nil;
+  self.introAg     = nil;
+  self.outroAg     = nil;
+  self.outroTimer  = nil;
+  self.config      = nil;
+  self.prevLine    = nil;
+  self.config      = config;
+  self.isMouseOver = mouseOverFn
 
-  -- Hyperlink handling
-  message:SetHyperlinksEnabled(true)
-
-  message:SetScript("OnHyperlinkClick", function (frame, link, text, button)
-    SetItemRef(link, text, button)
-  end)
-
-  message:SetScript("OnHyperlinkEnter", function (...)
-    if Core.db.profile.mouseOverTooltips then
-      local args = {...}
-      self:OnHyperlinkEnter(unpack(args))
-    end
-  end)
-
-  message:SetScript("OnHyperlinkLeave", function (...)
-    local args = {...}
-    self:OnHyperlinkLeave(unpack(args))
-  end)
+  self.frame = CreateFrame("Frame", nil, parent)
+  self.frame:SetWidth(self.config.width)
 
   -- Gradient background
-  message.leftBg = message:CreateTexture(nil, "BACKGROUND")
-  message.leftBg:SetPoint("LEFT")
-  message.leftBg:SetWidth(50)
-  message.leftBg:SetColorTexture(1, 1, 1, 1)
-  message.leftBg:SetGradientAlpha(
+  self.leftBg = self.frame:CreateTexture(nil, "BACKGROUND")
+  self.leftBg:SetPoint("LEFT")
+  self.leftBg:SetWidth(50)
+  self.leftBg:SetColorTexture(1, 1, 1, 1)
+  self.leftBg:SetGradientAlpha(
     "HORIZONTAL",
     Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, 0,
     Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, self.config.messageOpacity
   )
 
-  message.centerBg = message:CreateTexture(nil, "BACKGROUND")
-  message.centerBg:SetPoint("LEFT", 50, 0)
-  message.centerBg:SetPoint("RIGHT", -250, 0)
-  message.centerBg:SetColorTexture(
+  self.centerBg = self.frame:CreateTexture(nil, "BACKGROUND")
+  self.centerBg:SetPoint("LEFT", 50, 0)
+  self.centerBg:SetPoint("RIGHT", -250, 0)
+  self.centerBg:SetColorTexture(
     Colors.codGray.r,
     Colors.codGray.g,
     Colors.codGray.b,
     self.config.messageOpacity
   )
 
-  message.rightBg = message:CreateTexture(nil, "BACKGROUND")
-  message.rightBg:SetPoint("RIGHT")
-  message.rightBg:SetWidth(250)
-  message.rightBg:SetColorTexture(1, 1, 1, 1)
-  message.rightBg:SetGradientAlpha(
+  self.rightBg = self.frame:CreateTexture(nil, "BACKGROUND")
+  self.rightBg:SetPoint("RIGHT")
+  self.rightBg:SetWidth(250)
+  self.rightBg:SetColorTexture(1, 1, 1, 1)
+  self.rightBg:SetGradientAlpha(
     "HORIZONTAL",
     Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, self.config.messageOpacity,
     Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, 0
   )
 
-  message.text = message:CreateFontString(nil, "ARTWORK", "GlassMessageFont")
-  message.text:SetPoint("LEFT", self.config.xPadding, 0)
-  message.text:SetWidth(self.config.width - self.config.xPadding * 2)
+  self.text = self.frame:CreateFontString(nil, "ARTWORK", "GlassMessageFont")
+  self.text:SetPoint("LEFT", self.config.xPadding, 0)
+  self.text:SetWidth(self.config.width - self.config.xPadding * 2)
 
   -- Intro animations
-  message.introAg = message:CreateAnimationGroup()
-  local fadeIn = message.introAg:CreateAnimation("Alpha")
+  self.introAg = self.frame:CreateAnimationGroup()
+  local fadeIn = self.introAg:CreateAnimation("Alpha")
   fadeIn:SetFromAlpha(0)
   fadeIn:SetToAlpha(1)
   fadeIn:SetDuration(0.6)
   fadeIn:SetSmoothing("OUT")
 
   -- Outro animations
-  message.outroAg = message:CreateAnimationGroup()
-  local fadeOut = message.outroAg:CreateAnimation("Alpha")
+  self.outroAg = self.frame:CreateAnimationGroup()
+  local fadeOut = self.outroAg:CreateAnimation("Alpha")
   fadeOut:SetFromAlpha(1)
   fadeOut:SetToAlpha(0)
   fadeOut:SetDuration(0.6)
 
   -- Hide the frame when the outro animation finishes
-  message.outroAg:SetScript("OnFinished", function ()
-    message:Hide()
+  self.outroAg:SetScript("OnFinished", function ()
+    self.frame:Hide()
   end)
 
   -- Start intro animation when element is shown
-  message:SetScript("OnShow", function ()
-    message.introAg:Play()
+  self.frame:SetScript("OnShow", function ()
+    self.introAg:Play()
 
     -- Play outro after hold time
-    if not self.state.mouseOver then
-      message.outroTimer = C_Timer.NewTimer(Core.db.profile.chatHoldTime, function()
-        if message:IsVisible() then
-          message.outroAg:Play()
+    if not self.isMouseOver() then
+      self.outroTimer = C_Timer.NewTimer(Core.db.profile.chatHoldTime, function()
+        if self.frame:IsVisible() then
+          self.outroAg:Play()
         end
       end)
     end
   end)
-
-  -- Methods
-
-  ---
-  -- Update height based on text height
-  function message.UpdateFrame()
-    local Ypadding = message.text:GetLineHeight() * 0.25
-    local messageLineHeight = (message.text:GetStringHeight() + Ypadding * 2)
-    message:SetHeight(messageLineHeight)
-    message.leftBg:SetHeight(messageLineHeight)
-    message.centerBg:SetHeight(messageLineHeight)
-    message.rightBg:SetHeight(messageLineHeight)
-
-    message:SetWidth(self.config.width)
-    message.text:SetWidth(self.config.width - self.config.xPadding * 2)
-  end
-
-  ---
-  -- Update texture color based on setting
-  function message.UpdateTextures()
-    self.config.messageOpacity = Core.db.profile.chatBackgroundOpacity
-
-    message.leftBg:SetGradientAlpha(
-      "HORIZONTAL",
-      Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, 0,
-      Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, self.config.messageOpacity
-    )
-
-    message.centerBg:SetColorTexture(
-      Colors.codGray.r,
-      Colors.codGray.g,
-      Colors.codGray.b,
-      self.config.messageOpacity
-    )
-
-    message.rightBg:SetGradientAlpha(
-      "HORIZONTAL",
-      Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, self.config.messageOpacity,
-      Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, 0
-    )
-  end
-
-  return message
 end
 
-function SlidingMessageFrame:CreateMessageFrame(frame, text, red, green, blue, messageId, holdTime)
+function Message:UpdateFrame()
+  local Ypadding = self.text:GetLineHeight() * 0.25
+  local messageLineHeight = (self.text:GetStringHeight() + Ypadding * 2)
+  self.frame:SetHeight(messageLineHeight)
+  self.leftBg:SetHeight(messageLineHeight)
+  self.centerBg:SetHeight(messageLineHeight)
+  self.rightBg:SetHeight(messageLineHeight)
+
+  self.frame:SetWidth(self.config.width)
+  self.text:SetWidth(self.config.width - self.config.xPadding * 2)
+end
+
+function Message:UpdateTextures()
+  self.config.messageOpacity = Core.db.profile.chatBackgroundOpacity
+
+  self.leftBg:SetGradientAlpha(
+    "HORIZONTAL",
+    Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, 0,
+    Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, self.config.messageOpacity
+  )
+
+  self.centerBg:SetColorTexture(
+    Colors.codGray.r,
+    Colors.codGray.g,
+    Colors.codGray.b,
+    self.config.messageOpacity
+  )
+
+  self.rightBg:SetGradientAlpha(
+    "HORIZONTAL",
+    Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, self.config.messageOpacity,
+    Colors.codGray.r, Colors.codGray.g, Colors.codGray.b, 0
+  )
+end
+
+function SlidingMessageFrame:MessagePoolCreator()
+  local result = Object.New(Message)
+  result:Initialize(self.config, self.slider, function() return self.state.isMouseOver; end)
+    -- Hyperlink handling
+  result.frame:SetHyperlinksEnabled(true)
+
+  result.frame:SetScript("OnHyperlinkClick", function (_, link, text, button)
+    SetItemRef(link, text, button)
+  end)
+
+  result.frame:SetScript("OnHyperlinkEnter", function (...)
+    if Core.db.profile.mouseOverTooltips then
+      local args = {...}
+      self:OnHyperlinkEnter(unpack(args))
+    end
+  end)
+
+  result.frame:SetScript("OnHyperlinkLeave", function (...)
+    local args = {...}
+    self:OnHyperlinkLeave(unpack(args))
+  end)
+
+  return result
+end
+
+---
+--Takes a texture escape string and adjusts its yOffset
+local function adjustTextureYOffset(texture)
+  -- Texture has 14 parts
+  -- path, height, width, offsetX, offsetY,
+  -- texWidth, texHeight
+  -- leftTex, topTex, rightTex, bottomText,
+  -- rColor, gColor, bColor
+
+  -- Strip escape characters
+  -- Split into parts
+  local parts = {split(':', strsub(texture, 3, -3))}
+  local yOffset = Core.db.profile.iconTextureYOffset
+
+  if #parts < 5 then
+    -- Pad out ommitted attributes
+    for i=1, 5 do
+      if parts[i] == nil then
+        if i == 3 then
+          -- If width is not specified, the width should equal the height
+          parts[i] = parts[2]
+        else
+          parts[i] = '0'
+        end
+      end
+    end
+  end
+
+  -- Adjust yOffset by -4
+  parts[5] = tostring(tonumber(parts[5]) - yOffset)
+
+  -- Rejoin into strings
+  local newTex = reduce(parts, function (acc, part)
+    if acc then
+      return acc..":"..part
+    end
+    return part
+  end)
+
+  -- Re-add escape codes
+  return '|T'..newTex..'|t'
+end
+
+---
+-- Gets all inline textures found in the string and adjusts their yOffset
+local function transformTextures(text)
+  local cursor = 1
+  local origLen = strlen(text)
+
+  local parts = {}
+
+  while cursor <= origLen do
+    local mStart, mEnd = strfind(text, '%|T.-%|t', cursor)
+
+    if mStart then
+      tinsert(parts, strsub(text, cursor, mStart - 1))
+      tinsert(parts, adjustTextureYOffset(strsub(text, mStart, mEnd)))
+      cursor = mEnd + 1
+    else
+      -- No more matches
+      tinsert(parts, strsub(text, cursor, origLen))
+      cursor = origLen + 1
+    end
+  end
+
+  local newText = reduce(parts, function (acc, part)
+    return acc..part
+  end, "")
+
+  return newText
+end
+
+function SlidingMessageFrame:CreateMessageFrame(_, text, red, green, blue, _, _)
   red = red or 1
   green = green or 1
   blue = blue or 1
 
   local message = self.messageFramePool:Acquire()
-  message:SetPoint("BOTTOMLEFT")
+  message.frame:SetPoint("BOTTOMLEFT")
 
   -- Attach previous message to this one
-  if self.prevLine then
-    self.prevLine:ClearAllPoints()
-    self.prevLine:SetPoint("BOTTOMLEFT", message, "TOPLEFT")
+  if self.prevLine and self.prevLine.frame then
+    self.prevLine.frame:ClearAllPoints()
+    self.prevLine.frame:SetPoint("BOTTOMLEFT", message.frame, "TOPLEFT")
   end
 
   self.prevLine = message
@@ -314,8 +400,8 @@ function SlidingMessageFrame:OnEnterContainer()
   self.state.mouseOver = true
 
   for _, message in ipairs(self.state.messages) do
-    if Core.db.profile.chatShowOnMouseOver and not message:IsVisible() then
-      message:Show()
+    if Core.db.profile.chatShowOnMouseOver and not message.frame:IsVisible() then
+      message.frame:Show()
     end
 
     if message.outroTimer then
@@ -329,9 +415,9 @@ function SlidingMessageFrame:OnLeaveContainer()
   self.state.mouseOver = false
 
   for _, message in ipairs(self.state.messages) do
-    if message:IsVisible() then
+    if message.frame:IsVisible() then
       message.outroTimer = C_Timer.NewTimer(Core.db.profile.chatHoldTime, function()
-        if message:IsVisible() then
+        if message.frame:IsVisible() then
           message.outroAg:Play()
         end
       end)
@@ -339,7 +425,7 @@ function SlidingMessageFrame:OnLeaveContainer()
   end
 end
 
-function SlidingMessageFrame:OnHyperlinkEnter(f, link, text)
+function SlidingMessageFrame:OnHyperlinkEnter(_, link, text)
   local t = string.match(link, "^(.-):")
 
   if linkTypes[t] then
@@ -357,7 +443,7 @@ function SlidingMessageFrame:OnHyperlinkEnter(f, link, text)
   end
 end
 
-function SlidingMessageFrame:OnHyperlinkLeave(f, link)
+function SlidingMessageFrame:OnHyperlinkLeave(_, _)
   if self.state.showingTooltip then
     self.state.showingTooltip:Hide()
     self.state.showingTooltip = false
@@ -367,7 +453,7 @@ end
 function SlidingMessageFrame:AddMessage(...)
   -- Enqueue messages to be displayed
   local args = {...}
-  table.insert(self.state.incomingMessages, args)
+  tinsert(self.state.incomingMessages, args)
 end
 
 
@@ -386,12 +472,12 @@ function SlidingMessageFrame:Update()
     local newMessages = {}
 
     for _, message in ipairs(self.state.incomingMessages) do
-      table.insert(newMessages, self:CreateMessageFrame(unpack(message)))
+      tinsert(newMessages, self:CreateMessageFrame(unpack(message)))
     end
 
     -- Update slider offsets animation
-    local offset = reduce(newMessages, function (acc, message)
-      return acc + message:GetHeight()
+    local offset = reduce(newMessages, function(acc, message)
+      return acc + message.frame:GetHeight()
     end, 0)
 
     local newHeight = self.slider:GetHeight() + offset
@@ -402,9 +488,9 @@ function SlidingMessageFrame:Update()
     -- Display and run everything
     self.scrollFrame:SetVerticalScroll(newHeight - self.scrollFrame:GetHeight() + self.config.overflowHeight)
 
-    for _, messageFrame in ipairs(newMessages) do
-      messageFrame:Show()
-      table.insert(self.state.messages, messageFrame)
+    for _, message in ipairs(newMessages) do
+      message.frame:Show()
+      tinsert(self.state.messages, message)
     end
 
     self.sliderAg:Play()
