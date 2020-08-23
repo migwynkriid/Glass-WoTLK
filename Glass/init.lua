@@ -6,9 +6,11 @@ local AddonName, AddonVars = ...
 local Core = AceAddon:NewAddon(AddonName)
 local Constants = {}
 local Utils = {}
+local Object = {}
 AddonVars[1] = Core
 AddonVars[2] = Constants
 AddonVars[3] = Utils
+AddonVars[4] = Object
 _G[AddonName] = Core
 
 local WOW_PROJECT_ID = WOW_PROJECT_ID

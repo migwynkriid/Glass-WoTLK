@@ -45,15 +45,6 @@ function MC:OnInitialize()
   ChatAlertFrame:ClearAllPoints()
   ChatAlertFrame:SetPoint("BOTTOMLEFT", self.container, "TOPLEFT", 15, 10)
 
-  -- Main font
-  local font = CreateFont("GlassFont")
-  font:SetFont("Fonts\\FRIZQT__.TTF", 12)
-  font:SetShadowColor(0, 0, 0, 1)
-  font:SetShadowOffset(1, -1)
-  font:SetJustifyH("LEFT")
-  font:SetJustifyV("MIDDLE")
-  font:SetSpacing(3)
-
   -- Hide other chat elements
   if (not Core.Classic) then
     QuickJoinToastButton:Hide()
