@@ -67,8 +67,30 @@ function C:OnEnable()
               type = "description",
               name = ""
             },
-            iconTextureYOffset = {
+            messageFontSpacing = {
               order = 40,
+              type = "range",
+              name = "Font spacing",
+              desc = "Controls the spacing of the message text",
+              min = 0, 
+              max = 100,
+              softMin = 0,
+              softMax = 5,
+              step = 0.1,
+              get = function () return Core.db.profile.messageFontSpacing end,
+              set = function (_, input) 
+                Core.db.profile.messageFontSpacing = input
+                SMF:OnUpdateFont()
+                EB:OnUpdateFont()
+              end,
+            },
+            messageFontSpacingNl = {
+              order = 50,
+              type = "description",
+              name = ""
+            },
+            iconTextureYOffset = {
+              order = 60,
               type = "range",
               name = "Icon texture Y offset",
               desc = "Controls the vertical offset of text icons",
@@ -85,17 +107,17 @@ function C:OnEnable()
               end,
             },
             iconTextureYOffsetDesc = {
-              order = 50,
+              order = 70,
               type = "description",
               name = "This controls the vertical offset of text icons. Adjust this if text icons aren't centered."
             },
             mouseOverHeading = {
-              order = 60,
+              order = 80,
               type = "header",
               name = "Mouse over tooltips"
             },
             mouseOverTooltips = {
-              order = 70,
+              order = 90,
               type = "toggle",
               name = "Enable",
               get = function ()
@@ -106,17 +128,17 @@ function C:OnEnable()
               end,
             },
             mouseOverTooltipsDesc = {
-              order = 80,
+              order = 100,
               type = "description",
               name = "Check if you want tooltips to appear when hovering over chat links.",
             },
             chatHeader = {
-              order = 90,
+              order = 110,
               type = "header",
               name = "Chat"
             },
             chatHoldTime = {
-              order = 100,
+              order = 120,
               type = "range",
               name = "Fade out delay",
               min = 1,
@@ -132,7 +154,7 @@ function C:OnEnable()
               end,
             },
             chatShowOnMouseOver = {
-              order = 105,
+              order = 125,
               type = "toggle",
               name = "Show on mouse over",
               get = function ()
@@ -143,12 +165,12 @@ function C:OnEnable()
               end,
             },
             chatHoldTimeNl = {
-              order = 110,
+              order = 130,
               type = "description",
               name = ""
             },
             chatBackgroundOpacity = {
-              order = 120,
+              order = 140,
               type = "range",
               name = "Chat background opacity",
               min = 0,
@@ -165,17 +187,17 @@ function C:OnEnable()
               end,
             },
             chatBackgroundOpacityDesc = {
-              order = 130,
+              order = 150,
               type = "description",
               name = ""
             },
             frameHeader = {
-              order = 140,
+              order = 160,
               type = "header",
               name = "Frame"
             },
             frameWidth = {
-              order = 150,
+              order = 170,
               type = "range",
               name = "Width",
               min = 300,
@@ -196,7 +218,7 @@ function C:OnEnable()
               end
             },
             frameHeight = {
-              order = 160,
+              order = 180,
               type = "range",
               name = "Height",
               min = 1,
