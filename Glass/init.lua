@@ -50,7 +50,8 @@ function Core:OnInitialize()
       mouseOverTooltips = true,
       chatHoldTime = 10,
       chatBackgroundOpacity = 0.4,
-      chatShowOnMouseOver = true
+      chatShowOnMouseOver = true,
+      messageFontSpacing = 3
     }
   }
 
