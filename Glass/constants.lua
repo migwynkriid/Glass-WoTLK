@@ -3,6 +3,8 @@ local _, Constants = unpack(select(2, ...))
 -- luacheck: push ignore 113
 local WOW_PROJECT_CLASSIC = WOW_PROJECT_CLASSIC
 local WOW_PROJECT_ID = WOW_PROJECT_ID
+local WOW_PROJECT_CLASSIC_WRATH = WOW_PROJECT_WRATH_CLASSIC
+
 -- luacheck: pop
 
 -- Constants
@@ -11,13 +13,13 @@ Constants.TEXT_XPADDING = 15
 
 Constants.ENV = "retail"
 
-if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
+if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC or WOW_PROJECT_ID == WOW_PROJECT_CLASSIC_WRATH then
   Constants.ENV = "classic"
 end
 
 -- Colors
 local function createColor(r, g, b)
-  return {r = r / 255, g = g / 255, b = b / 255}
+  return { r = r / 255, g = g / 255, b = b / 255 }
 end
 
 Constants.COLORS = {
@@ -42,37 +44,37 @@ Constants.EVENTS = {
 }
 
 Constants.ACTIONS = {
-  HyperlinkClick = function (payload)
+  HyperlinkClick = function(payload)
     return Constants.EVENTS.HYPERLINK_CLICK, payload
   end,
-  HyperlinkEnter = function (payload)
+  HyperlinkEnter = function(payload)
     return Constants.EVENTS.HYPERLINK_ENTER, payload
   end,
-  HyperlinkLeave = function (link)
+  HyperlinkLeave = function(link)
     return Constants.EVENTS.HYPERLINK_LEAVE, link
   end,
-  LockMover = function ()
+  LockMover = function()
     return Constants.EVENTS.LOCK_MOVER
   end,
-  MouseEnter = function ()
+  MouseEnter = function()
     return Constants.EVENTS.MOUSE_ENTER
   end,
-  MouseLeave = function ()
+  MouseLeave = function()
     return Constants.EVENTS.MOUSE_LEAVE
   end,
-  OpenNews = function ()
+  OpenNews = function()
     return Constants.EVENTS.OPEN_NEWS
   end,
-  RefreshConfig = function ()
+  RefreshConfig = function()
     return Constants.EVENTS.REFRESH_CONFIG
   end,
-  SaveFramePosition = function (payload)
+  SaveFramePosition = function(payload)
     return Constants.EVENTS.SAVE_FRAME_POSITION, payload
   end,
-  UnlockMover = function ()
+  UnlockMover = function()
     return Constants.EVENTS.UNLOCK_MOVER
   end,
-  UpdateConfig = function (payload)
+  UpdateConfig = function(payload)
     return Constants.EVENTS.UPDATE_CONFIG, payload
   end,
 }
