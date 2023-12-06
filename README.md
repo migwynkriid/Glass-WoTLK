@@ -4,7 +4,7 @@ Please use [LS: Glass](https://www.curseforge.com/wow/addons/ls-glass "LS: Glass
 
 * [LS: Glass on CurseForge](https://www.curseforge.com/wow/addons/ls-glass)
 * [LS: Glass on Wago](https://addons.wago.io/addons/ls-glass)
-* This is a fix for WotLK Classic
+* This is a fix for WotLK Classic and Classic Era
 
 **Original description follows**
 
