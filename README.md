@@ -5,6 +5,7 @@ Please use [LS: Glass](https://www.curseforge.com/wow/addons/ls-glass "LS: Glass
 * [LS: Glass on CurseForge](https://www.curseforge.com/wow/addons/ls-glass)
 * [LS: Glass on Wago](https://addons.wago.io/addons/ls-glass)
 * This is a fix for WotLK Classic and Classic Era
+* Fix and files provided by this Curseforge comment: https://legacy.curseforge.com/wow/addons/glass?comment=358
 
 **Original description follows**
 
