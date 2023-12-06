@@ -1,4 +1,4 @@
-# Glass Minimalistic Chat for Wrath of the Lich King - Classic 
+# Glass Minimalistic Chat for Wrath of the Lich King Classic - Classic Era
 
 Please use [LS: Glass](https://www.curseforge.com/wow/addons/ls-glass "LS: Glass") For Retail
 
